@@ -1,7 +1,7 @@
 package com.example.cyder.aktivaturbo;
 
-import android.app.Service;
 import android.os.Handler;
+import android.os.health.SystemHealthManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,51 +17,50 @@ import java.util.concurrent.Executors;
  */
 
 public abstract class PCCommunicate {
+    /** スレッドが実行中かどうかを示す変数 */
+    private boolean running = false;
     /** ポート番号 */
     private final int mPort;
     /** ハンドラ */
     private final Handler mHandler;
+
     /** データを受信するスレッド */
     private final Runnable mAcceptTask = new Runnable() {
         public void run() {
+            running = true;
+            /** サーバソケット */
             final ServerSocket serverSocket;
 
             try {
+                // サーバのインスタンス化
                 serverSocket = new ServerSocket(mPort);
             } catch (final IOException e) {
                 throw new RuntimeException(e);
             }
 
-            final Socket socket;
             try {
-                socket = serverSocket.accept();
-            } catch (final IOException e) {
+                while (running) {
+                    /** ソケット */
+                    final Socket socket;
+                    // ソケットのインスタンス化
+                    socket = serverSocket.accept();
+
+                    final InputStream inputStream = socket.getInputStream();
+                    final String data = readAllLine(inputStream);
+                    mHandler.post(new Runnable() {
+                        public void run() {
+                            onReceivedData(data);
+                        }
+                    });
+                }
+            } catch (final IOException e){
                 throw new RuntimeException(e);
             } finally {
-                try {
-                    serverSocket.close();
-                } catch (final IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-            try {
-                final InputStream inputStream = socket.getInputStream();
-                final String data = readAllLine(inputStream);
-
-                mHandler.post(new Runnable() {
-                    public void run() {
-                        onReceivedData(data);
-                    }
-                });
-            } catch (final IOException e) {
-                throw new RuntimeException(e);
-            } finally {
-                try {
-                    socket.close();
-                } catch (final IOException e) {
-                    throw new RuntimeException(e);
-                }
+              try {
+                  serverSocket.close();
+              }catch (final IOException e){
+                  throw new RuntimeException(e);
+              }
             }
         }
     };
@@ -85,5 +84,9 @@ public abstract class PCCommunicate {
             builder.append(line);
         }
         return builder.toString();
+    }
+
+    public void setRunning(boolean running){
+        this.running = running;
     }
 }

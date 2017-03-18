@@ -9,10 +9,11 @@ public class MainActivity extends AppCompatActivity {
 
     MobileCommunicate mobileCommunicate;
 
-    private final PCCommunicate mMessageListener = new PCCommunicate(8888) {
+    private final PCCommunicate pcCommunicate = new PCCommunicate(8888) {
         @Override
         protected void onReceivedData(final String data) {
             Toast.makeText(getApplicationContext(), data, Toast.LENGTH_LONG).show();
+            Log.d("MainActivity", "received:" + data);
         }
     };
 
@@ -25,11 +26,17 @@ public class MainActivity extends AppCompatActivity {
         mobileCommunicate = new MobileCommunicate();
         mobileCommunicate.connect(this);
 
-        mMessageListener.start();
+        pcCommunicate.start();
     }
 
     @Override
     protected void onResume(){
         super.onResume();
+    }
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        pcCommunicate.setRunning(false);
     }
 }
