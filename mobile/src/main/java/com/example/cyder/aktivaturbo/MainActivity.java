@@ -3,11 +3,13 @@ package com.example.cyder.aktivaturbo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
-
-    MobileCommunicate mobileCommunicate;
+    private Button button;
+    UsbMessage usbMessage;
 
     private final PCCommunicate pcCommunicate = new PCCommunicate(8888) {
         @Override
@@ -22,11 +24,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        通信用クラスのインスタンス化
-        mobileCommunicate = new MobileCommunicate();
-        mobileCommunicate.connect(this);
+        usbMessage = new UsbMessage(8888);
 
-        pcCommunicate.start();
+        button = (Button)findViewById(R.id.button2);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                System.out.println("送信しました");
+                usbMessage.sendData("Hello,world");
+            }
+        });
     }
 
     @Override

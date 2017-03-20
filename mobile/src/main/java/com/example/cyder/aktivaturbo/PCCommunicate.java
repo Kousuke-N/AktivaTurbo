@@ -1,7 +1,6 @@
 package com.example.cyder.aktivaturbo;
 
 import android.os.Handler;
-import android.os.health.SystemHealthManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -44,12 +43,17 @@ public abstract class PCCommunicate {
                     final Socket socket;
                     // ソケットのインスタンス化
                     socket = serverSocket.accept();
-
                     final InputStream inputStream = socket.getInputStream();
                     final String data = readAllLine(inputStream);
                     mHandler.post(new Runnable() {
                         public void run() {
                             onReceivedData(data);
+                            if ( data == null || data.length() == 0 ){
+                                System.out.println("0");
+                            } else {
+                                System.out.println("1");
+                            }
+
                         }
                     });
                 }
